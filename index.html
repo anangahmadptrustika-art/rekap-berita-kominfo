@@ -709,7 +709,8 @@
                 document.getElementById('empty-state').classList.add('hidden');
             }
 
-            filteredData.forEach((item) => {
+            // TAMBAHKAN index pada parameter forEach
+            filteredData.forEach((item, index) => {
                 const tr = document.createElement('tr');
                 const isKominfo = item.source.toLowerCase().includes('kominfo');
                 
@@ -722,8 +723,9 @@
                 const dateStr = item.date.toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'});
 
                 // GUNAKAN escapeHtml() UNTUK KEAMANAN XSS
+                // UBAH ${item.id} menjadi ${index + 1}
                 tr.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium text-center border-r border-gray-100">${item.id}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium text-center border-r border-gray-100">${index + 1}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-mono text-xs">${dateStr}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-bold ${isKominfo ? 'text-blue-700' : 'text-gray-600'}">
                         ${isKominfo ? '<i class="fa-solid fa-building-columns mr-1 text-xs"></i>' : ''}
@@ -823,7 +825,7 @@
             // 4. INFO PERIODE & FILTER
             const currentMonth = document.getElementById('filter-month');
             const currentYear = document.getElementById('filter-year');
-            const filterText = `Periode: ${currentMonth.options[currentMonth.selectedIndex].text} ${currentYear.options[currentYear.selectedIndex].text}`;
+            const filterText = `Periode Laporan: ${currentMonth.options[currentMonth.selectedIndex].text} ${currentYear.options[currentYear.selectedIndex].text}`;
             
             doc.setFontSize(10);
             doc.setFont("helvetica", "normal");
@@ -834,9 +836,11 @@
             const tableColumn = ["No", "Tanggal", "Sumber", "Judul Berita", "Link"];
             const tableRows = [];
 
-            filteredData.forEach((item) => {
+            // TAMBAHKAN index pada parameter forEach
+            filteredData.forEach((item, index) => {
                 const dateStr = item.date.toLocaleDateString('id-ID', {day: '2-digit', month: '2-digit', year: 'numeric'});
-                const rowData = [item.id, dateStr, item.source, item.title, item.link];
+                // UBAH item.id menjadi index + 1
+                const rowData = [index + 1, dateStr, item.source, item.title, item.link];
                 tableRows.push(rowData);
             });
 
