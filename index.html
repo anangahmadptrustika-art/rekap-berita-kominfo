@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- === JUDUL BROWSER (Tab) === -->
+    <title>Sistem Monitoring Media - Dinas Kominfo</title>
+    
+    <!-- === METADATA PROFESIONAL (Untuk Share Link WA/Telegram) === -->
+    <meta name="description" content="Sistem Informasi Monitoring & Rekapitulasi Berita Resmi. Terintegrasi Real-time dengan MerekamIndonesia.com.">
+    <meta name="author" content="MerekamIndonesia.com & Dinas Kominfo">
+    
+    <!-- Open Graph / Facebook / WhatsApp Preview -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://merekamindonesia.com/rekap-berita/">
+    <meta property="og:title" content="✅ Sistem Monitoring Media - Dinas Kominfo">
+    <meta property="og:description" content="Akses data pemberitaan real-time, rekapitulasi otomatis, dan laporan PDF resmi.">
+    <meta property="og:site_name" content="MerekamIndonesia.com">
+    <!-- Ganti URL gambar di bawah dengan URL logo Kominfo/Pemda Anda agar tampil di preview WA -->
+    <meta property="og:image" content="https://merekamindonesia.com/wp-content/uploads/2023/01/logo-placeholder.png"> 
+
+    <!-- Meta Security -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- SheetJS (Secure Excel Processing) -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    
+    <!-- jsPDF & AutoTable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gov: {
+                            900: '#111827',
+                            800: '#1e3a8a', // Official Blue
+                            700: '#1d4ed8',
+                            600: '#2563eb',
+                            100: '#f3f4f6',
+                            50:  '#eff6ff',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #f8fafc; /* Lighter/Cleaner background */
+            -webkit-font-smoothing: antialiased;
+        }
+        .table-container::-webkit-scrollbar {
+            height: 8px;
+        }
+        .table-container::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 4px;
+        }
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #1e3a8a;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Live Indicator Animation */
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #22c55e;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 0 rgba(34, 197, 94, 0.4);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+    </style>
+</head>
+<body class="text-gov-900 flex flex-col min-h-screen">
+
+    <!-- NAVBAR -->
+    <header class="bg-gov-800 text-white shadow-lg sticky top-0 z-50 border-b border-blue-900">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="bg-white text-gov-800 p-2 rounded-lg font-bold text-xl h-10 w-10 flex items-center justify-center shadow-sm">
+                    M
+                </div>
+                <div>
+                    <!-- TYPO FIXED: MEREKAMINDONESIA.COM -->
+                    <h1 class="text-lg font-bold leading-tight tracking-tight">MEREKAMINDONESIA.COM</h1>
+                    <div class="flex items-center gap-2">
+                        <p class="text-xs text-blue-200 uppercase tracking-wider">Sistem Monitoring Media</p>
+                        <span class="bg-green-500/20 text-green-100 text-[10px] px-1.5 py-0.5 rounded border border-green-500/30 flex items-center gap-1">
+                            <i class="fa-solid fa-shield-halved text-[8px]"></i> Secure
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="hidden md:flex flex-col items-end">
+                <p class="text-sm font-medium text-white/90">Dinas Komunikasi & Informatika</p>
+                <div class="flex items-center gap-3 mt-1">
+                    <button onclick="showAppInfo()" class="text-xs text-blue-200 hover:text-white underline decoration-dashed underline-offset-4 transition-colors">
+                        <i class="fa-regular fa-circle-question mr-1"></i>Info Aplikasi
+                    </button>
+                    <p class="text-xs text-blue-300 border-l border-blue-700 pl-3" id="current-date">...</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- Control Panel -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            
+            <!-- Option 1: Live Monitoring -->
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:border-gov-200 transition-colors relative overflow-hidden group">
+                <div class="absolute top-0 left-0 w-1 h-full bg-yellow-500"></div>
+                <div class="relative z-10">
+                    <h2 class="text-lg font-bold text-gray-800 mb-2 flex items-center justify-between">
+                        <span class="flex items-center"><i class="fa-solid fa-bolt text-yellow-500 mr-2"></i> Live Monitoring</span>
+                        <span id="live-indicator" class="hidden text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full border border-green-200 flex items-center gap-2 font-semibold">
+                            <span class="pulse-dot"></span> ONLINE
+                        </span>
+                    </h2>
+                    <p class="text-sm text-gray-600 mb-4 leading-relaxed">
+                        Sinkronisasi otomatis dengan database website setiap 30 detik. <br>
+                        <span class="text-xs text-gray-500"><i class="fa-solid fa-arrow-down-short-wide mr-1"></i>Prioritas: Kominfo > MerekamIndonesia > Tanggal</span>
+                    </p>
+                    
+                    <div class="flex flex-col gap-2">
+                        <button id="btn-sync" onclick="startLiveSync()" class="bg-gov-700 hover:bg-gov-800 text-white px-5 py-2.5 rounded-lg font-medium shadow-sm hover:shadow transition-all flex items-center gap-2 w-full justify-center group-hover:bg-gov-800">
+                            <i class="fa-solid fa-play"></i>
+                            <span id="btn-text">Mulai Monitoring</span>
+                        </button>
+                        
+                        <!-- Status & Countdown -->
+                        <div id="sync-status-container" class="hidden space-y-2 mt-2">
+                            <div id="sync-status" class="text-xs text-gray-500 flex items-center justify-center bg-gray-50 py-1.5 rounded border border-gray-100">
+                                <span class="loader align-middle mr-2"></span> <span id="sync-msg">Menghubungkan...</span>
+                            </div>
+                            <div id="next-update-timer" class="text-xs text-gray-400 italic text-center">
+                                Refresh dalam <span id="countdown" class="font-bold text-gov-700">30</span> detik
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Decor -->
+                <i class="fa-solid fa-tower-broadcast absolute -right-4 -bottom-4 text-9xl text-gray-50 opacity-10 transform -rotate-12 group-hover:scale-110 transition-transform duration-700"></i>
+            </div>
+
+            <!-- Option 2: Manual Upload -->
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:border-gov-200 transition-colors relative overflow-hidden group">
+                <div class="absolute top-0 left-0 w-1 h-full bg-green-600"></div>
+                <div class="relative z-10">
+                    <h2 class="text-lg font-bold text-gray-800 mb-2 flex items-center justify-between">
+                        <span class="flex items-center"><i class="fa-solid fa-file-excel text-green-600 mr-2"></i> Upload Arsip</span>
+                        <span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded border border-gray-200">
+                            <i class="fa-solid fa-lock mr-1"></i>Local Processing
+                        </span>
+                    </h2>
+                    <p class="text-sm text-gray-600 mb-4 leading-relaxed">
+                        Proses file Excel (.xlsx) secara lokal di browser ini. <br>
+                        <span class="text-xs text-gray-500">Data Anda tidak diunggah ke server manapun (Aman).</span>
+                    </p>
+                    <div class="relative">
+                        <input type="file" id="upload-excel" accept=".xlsx, .xls" class="hidden" onchange="handleFileUpload(event)">
+                        <label for="upload-excel" class="cursor-pointer border-2 border-dashed border-gray-300 hover:border-gov-600 hover:bg-blue-50/50 text-gray-600 px-4 py-2.5 rounded-lg font-medium transition-all flex items-center justify-center gap-2 w-full">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                            Pilih File Excel
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Dashboard Content -->
+        <div id="dashboard" class="hidden space-y-6 animate-fade-in">
+            
+            <!-- Filters & Actions -->
+            <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200 flex flex-col md:flex-row gap-4 items-end md:items-center justify-between">
+                <div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+                    <!-- Month Filter -->
+                    <div class="w-full sm:w-48">
+                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Filter Bulan</label>
+                        <div class="relative">
+                            <select id="filter-month" class="appearance-none w-full border-gray-300 border rounded-md pl-3 pr-8 py-2 text-sm focus:ring-gov-700 focus:border-gov-700 bg-gray-50" onchange="applyFilters()">
+                                <option value="all">Semua Bulan</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                                <i class="fa-solid fa-chevron-down text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Year Filter -->
+                    <div class="w-full sm:w-32">
+                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Filter Tahun</label>
+                        <div class="relative">
+                            <select id="filter-year" class="appearance-none w-full border-gray-300 border rounded-md pl-3 pr-8 py-2 text-sm focus:ring-gov-700 focus:border-gov-700 bg-gray-50" onchange="applyFilters()">
+                                <option value="all">Semua Tahun</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                                <i class="fa-solid fa-chevron-down text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-2 w-full md:w-auto border-t md:border-t-0 pt-4 md:pt-0">
+                    <button onclick="stopLiveSync(); if(confirm('Reset semua data?')) location.reload();" class="px-4 py-2 text-sm text-gray-600 font-medium hover:bg-gray-100 hover:text-red-600 rounded-md transition-colors border border-gray-300">
+                        <i class="fa-solid fa-power-off mr-1"></i> Reset
+                    </button>
+                    <button onclick="generatePDF()" class="flex-1 md:flex-none bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-md font-medium shadow-sm transition-colors text-sm flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-file-pdf"></i> Download PDF Resmi
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Summary -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-gradient-to-br from-blue-50 to-white p-4 rounded-lg border border-blue-100 shadow-sm">
+                    <p class="text-xs text-blue-600 font-bold uppercase tracking-wider">Total Berita</p>
+                    <p class="text-2xl font-bold text-gov-900 mt-1" id="stat-total">0</p>
+                </div>
+                <div class="bg-gradient-to-br from-green-50 to-white p-4 rounded-lg border border-green-100 shadow-sm">
+                    <p class="text-xs text-green-600 font-bold uppercase tracking-wider">Periode Data</p>
+                    <p class="text-lg font-bold text-gov-900 mt-1 truncate" id="stat-periode">-</p>
+                </div>
+                <div class="bg-gradient-to-br from-purple-50 to-white p-4 rounded-lg border border-purple-100 shadow-sm">
+                    <p class="text-xs text-purple-600 font-bold uppercase tracking-wider">Status Sistem</p>
+                    <p class="text-lg font-bold text-purple-900 mt-1 flex items-center gap-2">
+                        <span id="data-source-badge">Menunggu</span> <i class="fa-solid fa-circle-check text-sm"></i>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Data Table -->
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200">
+                <div class="p-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+                    <h3 class="font-bold text-gray-800 text-sm md:text-base"><i class="fa-solid fa-list-ul mr-2 text-gov-600"></i>Daftar Pemberitaan Media</h3>
+                    <div class="flex items-center gap-3">
+                         <span class="hidden sm:inline-block text-[10px] uppercase font-bold text-blue-700 bg-blue-50 px-2 py-1 rounded border border-blue-100 tracking-wider">
+                            <i class="fa-solid fa-sort mr-1"></i>Urutan: Kominfo > Merekam
+                         </span>
+                        <span class="text-xs text-gray-500">Total: <span id="row-count" class="font-bold text-gray-900">0</span></span>
+                    </div>
+                </div>
+                <div class="overflow-x-auto table-container">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-12 border-r border-gray-200">No</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-36">Tanggal</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-40">Sumber</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Judul Berita</th>
+                                <th scope="col" class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider w-24">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body" class="bg-white divide-y divide-gray-200">
+                            <!-- Rows inserted via JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Empty State -->
+                <div id="empty-state" class="hidden p-12 text-center bg-white">
+                    <div class="inline-block p-4 rounded-full bg-gray-50 mb-3">
+                        <i class="fa-solid fa-filter text-gray-300 text-2xl"></i>
+                    </div>
+                    <p class="text-gray-500 font-medium">Tidak ada data ditemukan untuk filter ini.</p>
+                    <button onclick="document.getElementById('filter-month').value='all'; document.getElementById('filter-year').value='all'; applyFilters();" class="text-blue-600 text-sm hover:underline mt-2">Reset Filter</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Initial Helper Text -->
+        <div id="initial-helper" class="text-center py-20 text-gray-400">
+            <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+                <i class="fa-solid fa-server text-4xl text-gray-300"></i>
+            </div>
+            <h3 class="text-lg font-bold text-gray-600">Sistem Siap Digunakan</h3>
+            <p class="text-sm mt-2 max-w-md mx-auto">Silakan pilih metode input data di atas (Live Monitoring atau Upload Excel) untuk memulai rekapitulasi.</p>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-gray-200 py-8 mt-8">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <div class="flex justify-center items-center gap-2 mb-2 text-gov-800 font-bold">
+                 <!-- TYPO FIXED HERE TOO -->
+                 <span>MEREKAMINDONESIA.COM</span>
+            </div>
+            <p class="text-sm text-gray-600">Sistem Informasi Monitoring Media & Rekapitulasi Berita</p>
+            <!-- COPYRIGHT CHANGED -->
+            <p class="text-xs text-gray-400 mt-4">&copy; 2025 MerekamIndonesia.com. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <!-- LOGIC -->
+    <script>
+        // --- GLOBAL VARIABLES ---
+        let allData = [];
+        let filteredData = [];
+        const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+        
+        // Timer Variables for Live Sync
+        let autoSyncIntervalId = null;
+        let countdownIntervalId = null;
+        let isFetching = false;
+
+        // --- SECURITY UTILS ---
+        
+        // Anti-XSS: Mencegah injeksi script berbahaya pada judul berita
+        function escapeHtml(text) {
+            if (!text) return "";
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.toString().replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+
+        // --- INFO MODAL ---
+        function showAppInfo() {
+            alert(
+                "=== INFO APLIKASI ===\n\n" +
+                "1. KEAMANAN DATA:\n" +
+                "   - Mode 'Upload Arsip': File Excel diproses 100% di dalam browser komputer Anda (Client-Side). Data TIDAK dikirim ke server manapun.\n" +
+                "   - Mode 'Live Monitoring': Hanya membaca data publik dari website MerekamIndonesia.com.\n\n" +
+                "2. PENGGUNAAN:\n" +
+                "   - Pastikan terhubung internet agar tampilan (CDN) termuat sempurna.\n" +
+                "   - Gunakan browser modern (Chrome/Edge/Firefox) untuk performa terbaik.\n" +
+                "   - Jika monitoring Live gagal, pastikan aplikasi ini di-hosting di domain yang sama dengan website berita.\n\n" +
+                "Dibuat untuk keperluan Dinas Kominfo."
+            );
+        }
+
+        // --- INIT ---
+        document.addEventListener('DOMContentLoaded', () => {
+            updateCurrentDate();
+        });
+
+        function updateCurrentDate() {
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('current-date').innerText = now.toLocaleDateString('id-ID', options);
+        }
+
+        // --- LIVE MONITORING FUNCTIONS ---
+        
+        function startLiveSync() {
+            if (autoSyncIntervalId) return; // Already running
+
+            // UI Updates
+            const btn = document.getElementById('btn-sync');
+            btn.disabled = true;
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+            document.getElementById('btn-text').innerText = "Monitoring Aktif";
+            document.getElementById('live-indicator').classList.remove('hidden');
+            document.getElementById('sync-status-container').classList.remove('hidden');
+
+            // Initial Fetch
+            fetchFromWebsite();
+
+            // Set Interval for Polling (30 seconds)
+            autoSyncIntervalId = setInterval(() => {
+                fetchFromWebsite();
+            }, 30000);
+
+            // Start Countdown Visual
+            startCountdown();
+        }
+
+        function stopLiveSync() {
+            if (autoSyncIntervalId) clearInterval(autoSyncIntervalId);
+            if (countdownIntervalId) clearInterval(countdownIntervalId);
+            autoSyncIntervalId = null;
+            countdownIntervalId = null;
+
+            // UI Reset
+            const btn = document.getElementById('btn-sync');
+            btn.disabled = false;
+            btn.classList.remove('opacity-75', 'cursor-not-allowed');
+            document.getElementById('btn-text').innerText = "Mulai Monitoring";
+            document.getElementById('live-indicator').classList.add('hidden');
+            document.getElementById('sync-status-container').classList.add('hidden');
+            document.getElementById('sync-msg').innerText = "Menghubungkan...";
+        }
+
+        function startCountdown() {
+            let timeLeft = 30;
+            const countdownEl = document.getElementById('countdown');
+            
+            if (countdownIntervalId) clearInterval(countdownIntervalId);
+            
+            countdownIntervalId = setInterval(() => {
+                timeLeft--;
+                if (timeLeft < 0) timeLeft = 30;
+                countdownEl.innerText = timeLeft;
+            }, 1000);
+        }
+
+        // --- API INTEGRATION (WORDPRESS) ---
+        async function fetchFromWebsite() {
+            if (isFetching) return; // Prevent overlap
+            isFetching = true;
+
+            const syncMsg = document.getElementById('sync-msg');
+            syncMsg.innerText = "Mengambil data terbaru...";
+            
+            // Show loader inside control panel only
+            const loader = document.querySelector('#sync-status .loader');
+            if(loader) loader.style.display = 'inline-block';
+
+            let allFetchedPosts = [];
+            let page = 1;
+            let keepFetching = true;
+
+            try {
+                // Gunakan domain absolut
+                const baseUrl = 'https://merekamindonesia.com';
+                
+                // Timestamp untuk mencegah cache browser
+                const ts = new Date().getTime();
+
+                // Fetch loop
+                while (keepFetching) {
+                    syncMsg.innerText = `Mengambil halaman ${page}...`;
+
+                    // PENTING: Menambahkan 'content' ke dalam _fields agar bisa membaca isi berita
+                    const endpoint = `/wp-json/wp/v2/posts?per_page=100&page=${page}&_fields=id,date,link,title,type,content&_=${ts}`;
+                    const apiUrl = baseUrl + endpoint;
+                    
+                    const response = await fetch(apiUrl);
+                    
+                    if (!response.ok) {
+                        if (response.status === 400) {
+                            keepFetching = false;
+                            break;
+                        }
+                        throw new Error(`HTTP Error: ${response.status}`);
+                    }
+
+                    const posts = await response.json();
+                    
+                    if (posts.length === 0) {
+                        keepFetching = false;
+                    } else {
+                        allFetchedPosts = allFetchedPosts.concat(posts);
+                        page++; 
+                    }
+                }
+                
+                // Only process if we got data
+                if (allFetchedPosts.length > 0) {
+                    processAPIData(allFetchedPosts);
+                    document.getElementById('data-source-badge').innerText = 'Live Website';
+                    
+                    // Reset countdown visual upon success
+                    startCountdown(); 
+                } else if (allData.length === 0) {
+                    // Only alert if we have NO data at all (first run)
+                    alert('Tidak ada berita ditemukan dari Website, atau koneksi terblokir.');
+                    stopLiveSync();
+                }
+
+                syncMsg.innerText = "Data diperbarui";
+                if(loader) loader.style.display = 'none';
+
+            } catch (error) {
+                console.error("Sync Error:", error);
+                syncMsg.innerText = "Gagal mengambil data";
+                // Jangan stop sync otomatis agar mencoba lagi di interval berikutnya
+                // Kecuali jika error CORS fatal (di localhost)
+            } finally {
+                isFetching = false;
+            }
+        }
+
+        function processAPIData(posts) {
+            allData = [];
+            
+            posts.forEach((post, index) => {
+                const dateObj = new Date(post.date);
+                
+                // DETEKSI SUMBER DARI KONTEN
+                let source = 'Merekam Indonesia'; // Default
+                if (post.content && post.content.rendered) {
+                    const contentLower = post.content.rendered.toLowerCase();
+                    // Mencari signature Kominfo
+                    if (contentLower.includes('humas/kominfo-sp') || contentLower.includes('kominfo-sp')) {
+                        source = 'Kominfo';
+                    }
+                }
+
+                allData.push({
+                    title: post.title.rendered, // Akan disanitasi saat render
+                    source: source,
+                    link: post.link,
+                    date: dateObj,
+                    monthIndex: dateObj.getMonth(),
+                    year: dateObj.getFullYear()
+                });
+            });
+
+            // --- LOGIKA SORTIR ---
+            // 1. Kominfo paling atas
+            // 2. Merekam Indonesia
+            // 3. Tanggal Terbaru
+            sortData();
+
+            finishDataProcessing();
+        }
+
+        // --- EXCEL PROCESSING (BACKUP) ---
+        function handleFileUpload(e) {
+            stopLiveSync(); // Stop auto sync if manual upload starts
+            
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                
+                processExcelData(jsonData);
+                document.getElementById('data-source-badge').innerText = 'Arsip Lokal';
+            };
+            
+            reader.readAsArrayBuffer(file);
+        }
+
+        function processExcelData(rawData) {
+            allData = []; 
+
+            rawData.forEach((row, index) => {
+                // Ambil data dengan fallback case-insensitive
+                const title = row['Title'] || row['title'] || 'Tanpa Judul';
+                const permalink = row['Permalink'] || row['permalink'] || '#';
+                
+                // Logika sumber
+                let source = row['Source'] || row['source'] || row['Sumber'] || row['sumber'];
+                if (!source) {
+                    try {
+                        const urlObj = new URL(permalink);
+                        if (urlObj.hostname.includes('kominfo')) source = 'Kominfo';
+                        else source = 'Merekam Indonesia';
+                    } catch (e) { source = 'Merekam Indonesia'; }
+                }
+
+                // Logika Tanggal
+                let dateRaw = row['Date'] || row['date'];
+                let dateObj = null;
+
+                if (dateRaw) {
+                    if (typeof dateRaw === 'number') {
+                        dateObj = new Date(Math.round((dateRaw - 25569)*86400*1000));
+                    } else if (typeof dateRaw === 'string') {
+                        let parts = dateRaw.split('-');
+                        if(parts.length === 3) {
+                            let year = parseInt(parts[0]);
+                            if (year < 100) year += 2000; 
+                            dateObj = new Date(year, parseInt(parts[1])-1, parseInt(parts[2]));
+                        } else {
+                             dateObj = new Date(dateRaw);
+                        }
+                    }
+                }
+                if (!dateObj || isNaN(dateObj.getTime())) dateObj = new Date(); 
+
+                allData.push({
+                    title: title,
+                    source: source,
+                    link: permalink,
+                    date: dateObj,
+                    monthIndex: dateObj.getMonth(),
+                    year: dateObj.getFullYear()
+                });
+            });
+
+            sortData();
+            finishDataProcessing();
+        }
+
+        // --- HELPER: SORTING ---
+        function sortData() {
+            allData.sort((a, b) => {
+                const isKominfoA = a.source.toLowerCase().includes('kominfo');
+                const isKominfoB = b.source.toLowerCase().includes('kominfo');
+
+                // Rule 1: Kominfo First
+                if (isKominfoA && !isKominfoB) return -1; // A di atas
+                if (!isKominfoA && isKominfoB) return 1;  // B di atas
+
+                // Rule 2: Date Descending (Newest First)
+                return b.date - a.date;
+            });
+
+            // Re-assign IDs based on new sort order
+            allData.forEach((item, index) => {
+                item.id = index + 1;
+            });
+        }
+
+        // --- COMMON PROCESSING ---
+        function finishDataProcessing() {
+            populateFilters();
+            document.getElementById('initial-helper').classList.add('hidden');
+            const dashboard = document.getElementById('dashboard');
+            dashboard.classList.remove('hidden');
+            dashboard.style.opacity = '0';
+            setTimeout(() => { dashboard.style.opacity = '1'; dashboard.style.transition = 'opacity 0.5s'; }, 50);
+            
+            applyFilters();
+        }
+
+        function populateFilters() {
+            const years = [...new Set(allData.map(d => d.year))].sort((a,b) => b-a);
+            const yearSelect = document.getElementById('filter-year');
+            const currentYear = yearSelect.value;
+            
+            yearSelect.innerHTML = '<option value="all">Semua Tahun</option>';
+            years.forEach(y => {
+                const opt = document.createElement('option');
+                opt.value = y;
+                opt.innerText = y;
+                if(currentYear == y) opt.selected = true;
+                yearSelect.appendChild(opt);
+            });
+
+            const monthSelect = document.getElementById('filter-month');
+            const currentMonth = monthSelect.value;
+            
+            monthSelect.innerHTML = '<option value="all">Semua Bulan</option>';
+            monthNames.forEach((m, idx) => {
+                const opt = document.createElement('option');
+                opt.value = idx;
+                opt.innerText = m;
+                if(currentMonth == idx) opt.selected = true;
+                monthSelect.appendChild(opt);
+            });
+        }
+
+        function applyFilters() {
+            const mVal = document.getElementById('filter-month').value;
+            const yVal = document.getElementById('filter-year').value;
+
+            filteredData = allData.filter(item => {
+                const matchMonth = (mVal === 'all') || (item.monthIndex == mVal);
+                const matchYear = (yVal === 'all') || (item.year == yVal);
+                return matchMonth && matchYear;
+            });
+
+            renderTable();
+            updateStats(mVal, yVal);
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+            document.getElementById('row-count').innerText = filteredData.length;
+
+            if (filteredData.length === 0) {
+                document.getElementById('empty-state').classList.remove('hidden');
+                return;
+            } else {
+                document.getElementById('empty-state').classList.add('hidden');
+            }
+
+            filteredData.forEach((item) => {
+                const tr = document.createElement('tr');
+                const isKominfo = item.source.toLowerCase().includes('kominfo');
+                
+                // Style: Kominfo rows get a slight blue tint to distinguish them
+                // Also added border-l-4 for visual cue
+                tr.className = isKominfo 
+                    ? 'bg-blue-50/60 hover:bg-blue-100 border-l-4 border-blue-600 transition-colors' 
+                    : 'bg-white hover:bg-gray-50 border-l-4 border-transparent transition-colors';
+                
+                const dateStr = item.date.toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'});
+
+                // GUNAKAN escapeHtml() UNTUK KEAMANAN XSS
+                tr.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium text-center border-r border-gray-100">${item.id}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-mono text-xs">${dateStr}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold ${isKominfo ? 'text-blue-700' : 'text-gray-600'}">
+                        ${isKominfo ? '<i class="fa-solid fa-building-columns mr-1 text-xs"></i>' : ''}
+                        ${escapeHtml(item.source)}
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-900 font-semibold max-w-lg leading-relaxed">
+                        ${escapeHtml(item.title)}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                        <a href="${item.link}" target="_blank" class="text-blue-600 hover:text-white border border-blue-600 hover:bg-blue-600 px-3 py-1.5 rounded text-xs transition-all inline-flex items-center gap-1">
+                            Buka <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                        </a>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateStats(monthVal, yearVal) {
+            document.getElementById('stat-total').innerText = filteredData.length;
+            
+            let periodeText = "Semua Waktu";
+            if (yearVal !== 'all') {
+                if (monthVal !== 'all') {
+                    periodeText = `${monthNames[monthVal]} ${yearVal}`;
+                } else {
+                    periodeText = `Tahun ${yearVal}`;
+                }
+            }
+            document.getElementById('stat-periode').innerText = periodeText;
+        }
+
+        // --- PDF GENERATOR ---
+        function generatePDF() {
+            if (filteredData.length === 0) {
+                alert("Tidak ada data untuk dicetak.");
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const primaryColor = [30, 58, 138];
+            
+            // Header Resmi
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(16);
+            doc.setTextColor(...primaryColor);
+            doc.text("REKAP PEMBERITAAN MEDIA ONLINE", 105, 20, { align: "center" });
+            
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.setTextColor(100);
+            doc.text("Sumber Data: MerekamIndonesia.com", 105, 26, { align: "center" });
+            
+            // Garis Pembatas
+            doc.setLineWidth(0.5);
+            doc.setDrawColor(200);
+            doc.line(14, 32, 196, 32);
+
+            // Info Filter
+            const currentMonth = document.getElementById('filter-month');
+            const currentYear = document.getElementById('filter-year');
+            const filterText = `Periode Laporan: ${currentMonth.options[currentMonth.selectedIndex].text} ${currentYear.options[currentYear.selectedIndex].text}`;
+            
+            doc.setFontSize(10);
+            doc.setTextColor(50);
+            doc.text(filterText, 14, 40);
+
+            const tableColumn = ["No", "Tanggal", "Sumber", "Judul Berita", "Link"];
+            const tableRows = [];
+
+            filteredData.forEach((item) => {
+                const dateStr = item.date.toLocaleDateString('id-ID', {day: '2-digit', month: '2-digit', year: 'numeric'});
+                const rowData = [item.id, dateStr, item.source, item.title, item.link];
+                tableRows.push(rowData);
+            });
+
+            doc.autoTable({
+                head: [tableColumn],
+                body: tableRows,
+                startY: 45,
+                theme: 'striped',
+                headStyles: { 
+                    fillColor: primaryColor, 
+                    textColor: [255, 255, 255], 
+                    fontStyle: 'bold',
+                    halign: 'center'
+                },
+                columnStyles: {
+                    0: { cellWidth: 10, halign: 'center' },
+                    1: { cellWidth: 25, halign: 'center' },
+                    2: { cellWidth: 25, fontStyle: 'bold', textColor: primaryColor },
+                    3: { cellWidth: 'auto' },
+                    4: { cellWidth: 40, overflow: 'linebreak', fontSize: 8, textColor: [37, 99, 235] }
+                },
+                styles: { fontSize: 9, cellPadding: 3, valign: 'middle' },
+                didDrawPage: function (data) {
+                    const now = new Date().toLocaleString('id-ID');
+                    doc.setFontSize(8);
+                    doc.setTextColor(150);
+                    doc.text("Dokumentasi ini dihasilkan secara otomatis oleh Sistem Monitoring Media.", data.settings.margin.left, doc.internal.pageSize.height - 10);
+                    doc.text(`Dicetak: ${now}`, doc.internal.pageSize.width - data.settings.margin.right, doc.internal.pageSize.height - 10, {align: 'right'});
+                }
+            });
+
+            const fileName = `Rekap_Berita_${new Date().toISOString().slice(0,10)}.pdf`;
+            doc.save(fileName);
+        }
+    </script>
+</body>
+</html>
