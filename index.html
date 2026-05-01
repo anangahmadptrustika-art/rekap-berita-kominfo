@@ -750,7 +750,9 @@
                 }
             }
 
-            // 2. DESAIN KOP SURAT (Mewah & Elegan - Mengikuti Style Referensi Patikala)
+            // ==========================================
+            // DESAIN KOP SURAT LAPORAN UTAMA
+            // ==========================================
             if (base64Logo) {
                 // Memasukkan Logo di Kiri (Ukuran sedikit diperbesar & diturunkan posisinya 
                 // agar bagian bawahnya sejajar dengan tulisan "merekam")
@@ -852,7 +854,132 @@
                 }
             });
 
-            // 5. SIMPAN PDF
+
+            // ==========================================
+            // HALAMAN TERAKHIR: CETAK INVOICE OTOMATIS
+            // ==========================================
+            doc.addPage();
+
+            // Setup Variabel Dinamis untuk Invoice (Tanggal dan Nomor menyesuaikan Filter)
+            const today = new Date();
+            let invDay = today.getDate().toString().padStart(2, '0');
+            let invMonthIdx = today.getMonth();
+            let invYear = today.getFullYear();
+
+            // Jika filter bulan dipilih, sesuaikan bulan invoice
+            if (currentMonth.value !== 'all') {
+                invMonthIdx = parseInt(currentMonth.value);
+            }
+            // Jika filter tahun dipilih, sesuaikan tahun invoice
+            if (currentYear.value !== 'all') {
+                invYear = parseInt(currentYear.value);
+            }
+
+            const invMonthStr = String(invMonthIdx + 1).padStart(2, '0');
+            const invMonthName = monthNames[invMonthIdx];
+            
+            // Format Nomor dan Tanggal
+            const invoiceNo = `INV/MI/005/${invMonthStr}/${invYear}`;
+            const invoiceDate = `${invDay} ${invMonthName} ${invYear}`;
+
+            // 1. Judul INVOICE
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(24);
+            doc.setTextColor(30, 58, 138); // Biru Gelap
+            doc.text("INVOICE", 105, 30, { align: "center" });
+            
+            // Garis Bawah Judul
+            const textWidth = doc.getTextWidth("INVOICE");
+            doc.setLineWidth(0.8);
+            doc.setDrawColor(30, 58, 138);
+            doc.line(105 - (textWidth / 2), 32, 105 + (textWidth / 2), 32);
+
+            // 2. Info Nomor & Tanggal
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(11);
+            doc.setTextColor(0, 0, 0);
+            doc.text(`No.: ${invoiceNo}`, 20, 50);
+            doc.text(`Tanggal: ${invoiceDate}`, 20, 58);
+
+            // 3. Kepada Yth.
+            doc.text("Kepada Yth.:", 20, 75);
+            doc.text("Dinas Komunikasi dan Informatika Kabupaten", 20, 81);
+            doc.text("Luwu Timur", 20, 87);
+            doc.text("Jl. Soekarno Hatta, Malili – Luwu Timur", 20, 93);
+
+            // 4. Tabel Rincian Tagihan
+            doc.text("Rincian Tagihan", 20, 110);
+
+            doc.autoTable({
+                startY: 115,
+                head: [['No', 'Deskripsi Jasa', 'Jumlah (Rp)']],
+                body: [
+                    ['1', 'Jasa pemberitaan\nonline/publikasi', '3.996.000']
+                ],
+                theme: 'grid',
+                headStyles: { 
+                    fillColor: [255, 255, 255], 
+                    textColor: [0, 0, 0], 
+                    fontStyle: 'normal', 
+                    lineColor: [0, 0, 0], 
+                    lineWidth: 0.3 
+                },
+                bodyStyles: { 
+                    fillColor: [255, 255, 255],
+                    textColor: [0, 0, 0], 
+                    lineColor: [0, 0, 0], 
+                    lineWidth: 0.3,
+                    valign: 'top'
+                },
+                columnStyles: {
+                    0: { cellWidth: 15 },
+                    1: { cellWidth: 100 },
+                    2: { cellWidth: 55 }
+                },
+                margin: { left: 20, right: 20 }
+            });
+
+            // 5. Total & Pembayaran
+            let finalY = doc.lastAutoTable.finalY + 8;
+            doc.setFont("helvetica", "bold");
+            doc.text("Total Tagihan: Rp3.996.000", 20, finalY);
+
+            finalY += 15;
+            doc.text("Metode Pembayaran:", 20, finalY);
+            
+            finalY += 6;
+            doc.setFont("helvetica", "normal");
+            doc.text("Silakan transfer ke rekening berikut:", 20, finalY);
+
+            finalY += 10;
+            doc.text("Bank: ", 20, finalY);
+            doc.setFont("helvetica", "bold");
+            doc.text("MANDIRI", 33, finalY);
+
+            finalY += 8;
+            doc.setFont("helvetica", "normal");
+            doc.text("Nama Rekening: ", 20, finalY);
+            doc.setFont("helvetica", "bold");
+            doc.text("ANANG AHMAD SYAH", 52, finalY);
+
+            finalY += 8;
+            doc.setFont("helvetica", "normal");
+            doc.text("No. Rekening: ", 20, finalY);
+            doc.setFont("helvetica", "bold");
+            doc.text("170-00-1008015-2", 48, finalY);
+
+            // 6. Tanda Tangan
+            finalY += 20;
+            doc.setFont("helvetica", "normal");
+            doc.text("Hormat Kami,", 130, finalY);
+            
+            finalY += 6;
+            doc.text("Media merekamindonesia.com", 130, finalY);
+
+            finalY += 30; // Ruang kosong untuk tanda tangan
+            doc.text("Anang Ahmad Syah", 130, finalY);
+
+            // SIMPAN PDF
             const fileName = `Rekap_Berita_${new Date().toISOString().slice(0,10)}.pdf`;
             doc.save(fileName);
         }
