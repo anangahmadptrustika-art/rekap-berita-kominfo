@@ -732,11 +732,9 @@
 
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            const primaryColor = [30, 58, 138]; // Warna Biru Gelap Mewah
             
             // 1. Ambil Logo dari HTML dan Convert ke Base64 agar bisa dibaca jsPDF
             let base64Logo = null;
-            let base64LogoPemda = null;
             
             const imgElement = document.getElementById('header-logo');
             if (imgElement) {
@@ -752,73 +750,66 @@
                 }
             }
 
-            // Load Logo Pemda Luwu Timur
-            const imgPemda = document.getElementById('header-logo-pemda');
-            if (imgPemda) {
-                try {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = imgPemda.naturalWidth || imgPemda.width;
-                    canvas.height = imgPemda.naturalHeight || imgPemda.height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(imgPemda, 0, 0);
-                    base64LogoPemda = canvas.toDataURL('image/png');
-                } catch (e) {
-                    console.warn("Gagal memuat logo Pemda untuk PDF:", e);
-                }
-            }
-
-            // 2. DESAIN KOP SURAT (Mewah & Elegan)
+            // 2. DESAIN KOP SURAT (Mewah & Elegan - Mengikuti Style Referensi Patikala)
             if (base64Logo) {
-                // Memasukkan Logo Merekam Indonesia di kiri
-                doc.addImage(base64Logo, 'PNG', 14, 12, 24, 24);
-            }
-            if (base64LogoPemda) {
-                // Memasukkan Logo Pemda di kanan atas
-                doc.addImage(base64LogoPemda, 'PNG', 172, 12, 24, 24);
+                // Memasukkan Logo Ikon Merekam Indonesia di Kiri
+                doc.addImage(base64Logo, 'PNG', 14, 10, 22, 22);
             }
 
-            // Nama Perusahaan / Instansi (Besar dan Tebal)
+            // --- Teks Brand (Kiri, di samping logo) ---
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(22);
-            doc.setTextColor(...primaryColor);
-            doc.text("MEREKAM INDONESIA", 42, 21);
+            doc.setFontSize(26);
+            doc.setTextColor(50, 50, 50); // Abu-abu gelap / Hitam
+            doc.text("merekam", 38, 23);
+            
+            doc.setTextColor(230, 57, 70); // Merah khas Merekam Indonesia
+            doc.text("indonesia", 80, 23); 
 
-            // Subtitle / Tagline Perusahaan
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(10);
-            doc.setTextColor(80);
-            doc.text("Sistem Informasi Monitoring Media & Rekapitulasi Berita Terpercaya", 42, 27);
-
-            // Kontak / Website (Kecil & Italic)
+            // Subtitle Kiri (Tagline)
             doc.setFont("helvetica", "italic");
-            doc.setFontSize(9);
-            doc.setTextColor(120);
-            doc.text("Website: www.merekamindonesia.com  |  Email: redaksi@merekamindonesia.com", 42, 32);
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.text("Sistem Informasi Monitoring Media", 40, 29);
 
-            // Garis Ganda Pembatas Kop Surat (Tebal & Tipis)
-            doc.setDrawColor(...primaryColor);
-            doc.setLineWidth(1.2);
-            doc.line(14, 38, 196, 38); // Garis atas (tebal)
-            doc.setLineWidth(0.3);
-            doc.line(14, 39.5, 196, 39.5); // Garis bawah (tipis)
-
-            // 3. JUDUL DOKUMEN LAPORAN
+            // --- DATA BADAN HUKUM (Kanan, rata kanan) ---
+            const rightMargin = 196;
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(14);
-            doc.setTextColor(20, 20, 20);
-            doc.text("LAPORAN REKAPITULASI PEMBERITAAN", 105, 50, { align: "center" });
+            doc.setFontSize(11);
+            doc.setTextColor(100, 100, 100); // Warna abu-abu tebal
+            doc.text("PT. WARTA MEREKAM INDONESIA", rightMargin, 15, { align: "right" });
 
-            // 4. INFO PERIODE & FILTER
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(9);
+            doc.setTextColor(50, 50, 50);
+            doc.text("SERTIFIKAT KEMENKUMHAM RI NOMOR:", rightMargin, 20, { align: "right" });
+            doc.text("AHU-074515.AH.01.30.Tahun 2024", rightMargin, 24, { align: "right" });
+            doc.text("NPWP: 28.627.033.5-803.000", rightMargin, 28, { align: "right" });
+            doc.text("email: merekamindonesia1@gmail.com", rightMargin, 32, { align: "right" });
+
+            // --- GARIS PEMBATAS TEBAL ---
+            doc.setDrawColor(0, 0, 0); // Hitam Pekat
+            doc.setLineWidth(1.5); // Sangat Tebal (Khas Dokumen Legal)
+            doc.line(14, 37, 196, 37);
+
+            // 3. JUDUL DOKUMEN LAPORAN (Otomatis menyesuaikan bulan/tahun)
             const currentMonth = document.getElementById('filter-month');
             const currentYear = document.getElementById('filter-year');
-            const filterText = `Periode Laporan: ${currentMonth.options[currentMonth.selectedIndex].text} ${currentYear.options[currentYear.selectedIndex].text}`;
+            const monthText = currentMonth.options[currentMonth.selectedIndex].text.toUpperCase();
+            const yearText = currentYear.options[currentYear.selectedIndex].text;
             
-            doc.setFontSize(10);
-            doc.setFont("helvetica", "normal");
-            doc.setTextColor(50);
-            doc.text(filterText, 14, 58);
+            let reportTitle = `REKAP BERITA MEREKAMINDONESIA.COM BULAN ${monthText} ${yearText}`;
+            if (currentMonth.value === 'all' && currentYear.value !== 'all') {
+                reportTitle = `REKAP BERITA MEREKAMINDONESIA.COM TAHUN ${yearText}`;
+            } else if (currentMonth.value === 'all' && currentYear.value === 'all') {
+                reportTitle = `REKAP BERITA MEREKAMINDONESIA.COM KESELURUHAN`;
+            }
 
-            // 5. TABEL DATA
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(14);
+            doc.setTextColor(0, 0, 0); // Hitam
+            doc.text(reportTitle, 105, 48, { align: "center" });
+
+            // 4. TABEL DATA
             const tableColumn = ["No", "Tanggal", "Sumber", "Judul Berita", "Link"];
             const tableRows = [];
 
@@ -832,10 +823,10 @@
             doc.autoTable({
                 head: [tableColumn],
                 body: tableRows,
-                startY: 63, // Menyesuaikan agar tidak menabrak Kop Surat
+                startY: 55, // Disesuaikan dengan posisi judul yang baru
                 theme: 'striped',
                 headStyles: { 
-                    fillColor: primaryColor, 
+                    fillColor: [30, 30, 30], // Warna Hitam/Abu Tua untuk header tabel agar serasi dengan kop
                     textColor: [255, 255, 255], 
                     fontStyle: 'bold',
                     halign: 'center'
@@ -843,12 +834,12 @@
                 columnStyles: {
                     0: { cellWidth: 10, halign: 'center' },
                     1: { cellWidth: 25, halign: 'center' },
-                    2: { cellWidth: 25, fontStyle: 'bold', textColor: primaryColor },
+                    2: { cellWidth: 25, fontStyle: 'bold', textColor: [30, 58, 138] },
                     3: { cellWidth: 'auto' },
                     4: { cellWidth: 40, overflow: 'linebreak', fontSize: 8, textColor: [37, 99, 235] }
                 },
                 styles: { fontSize: 9, cellPadding: 4, valign: 'middle' },
-                alternateRowStyles: { fillColor: [247, 249, 252] }, // Warna abu-abu kebiruan lembut
+                alternateRowStyles: { fillColor: [247, 249, 252] },
                 didDrawPage: function (data) {
                     const now = new Date().toLocaleString('id-ID');
                     doc.setFontSize(8);
@@ -860,7 +851,7 @@
                 }
             });
 
-            // 6. SIMPAN PDF
+            // 5. SIMPAN PDF
             const fileName = `Rekap_Berita_${new Date().toISOString().slice(0,10)}.pdf`;
             doc.save(fileName);
         }
