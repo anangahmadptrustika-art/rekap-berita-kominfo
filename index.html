@@ -752,24 +752,25 @@
 
             // 2. DESAIN KOP SURAT (Mewah & Elegan - Mengikuti Style Referensi Patikala)
             if (base64Logo) {
-                // Memasukkan Logo Bulat di Kiri (Posisi dan Ukuran sejajar dengan tinggi font)
-                doc.addImage(base64Logo, 'PNG', 14, 12.5, 12, 12);
+                // Memasukkan Logo di Kiri (Ukuran sedikit diperbesar & diturunkan posisinya 
+                // agar bagian bawahnya sejajar dengan tulisan "merekam")
+                doc.addImage(base64Logo, 'PNG', 13, 12.5, 14, 14);
             }
 
             // --- Teks Brand (Kiri, dirapatkan di samping logo) ---
             doc.setFont("helvetica", "bold");
             doc.setFontSize(28); 
             doc.setTextColor(50, 50, 50); // Abu-abu gelap / Hitam
-            doc.text("merekam", 28, 23); // X=28 (pas di samping logo yang lebarnya 12)
+            doc.text("merekam", 29, 23.5); // X=29 (pas di samping logo), Y disesuaikan
             
             doc.setTextColor(230, 57, 70); // Merah khas Merekam Indonesia
-            doc.text("indonesia", 74, 23); 
+            doc.text("indonesia", 75, 23.5); 
 
             // Subtitle Kiri (Tagline)
             doc.setFont("helvetica", "italic");
             doc.setFontSize(10);
             doc.setTextColor(100, 100, 100);
-            doc.text("Sistem Informasi Monitoring Media", 29, 29);
+            doc.text("Sistem Informasi Monitoring Media", 30, 29);
 
             // --- DATA BADAN HUKUM (Kanan, rata kanan) ---
             const rightMargin = 196;
