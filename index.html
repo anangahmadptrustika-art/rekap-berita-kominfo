@@ -36,9 +36,6 @@
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- SheetJS (Secure Excel Processing) -->
-    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-    
     <!-- jsPDF & AutoTable -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
@@ -105,6 +102,21 @@
             70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
             100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
         }
+        
+        /* Custom Animations for the Cool Dashboard Graphic */
+        .grid-bg {
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .bar-anim {
+            animation: eqBar 1.5s ease-in-out infinite alternate;
+        }
+        @keyframes eqBar {
+            0% { height: 10px; }
+            100% { height: 40px; }
+        }
     </style>
 </head>
 <body class="text-gov-900 flex flex-col min-h-screen">
@@ -123,7 +135,7 @@
                     <div class="flex items-center gap-2">
                         <p class="text-xs text-blue-200 uppercase tracking-wider">Sistem Monitoring Media</p>
                         <span class="bg-green-500/20 text-green-100 text-[10px] px-1.5 py-0.5 rounded border border-green-500/30 flex items-center gap-1">
-                            <i class="fa-solid fa-shield-halved text-[8px]"></i> Secure
+                            <i class="fa-solid fa-shield-halved text-[8px]"></i> Secure API
                         </span>
                     </div>
                 </div>
@@ -147,7 +159,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             
             <!-- Option 1: Live Monitoring -->
-            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:border-gov-200 transition-colors relative overflow-hidden group">
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:border-gov-200 transition-colors relative overflow-hidden group flex flex-col justify-between">
                 <div class="absolute top-0 left-0 w-1 h-full bg-yellow-500"></div>
                 <div class="relative z-10">
                     <h2 class="text-lg font-bold text-gray-800 mb-2 flex items-center justify-between">
@@ -161,7 +173,7 @@
                         <span class="text-xs text-gray-500"><i class="fa-solid fa-arrow-down-short-wide mr-1"></i>Prioritas: Kominfo > MerekamIndonesia > Tanggal</span>
                     </p>
                     
-                    <div class="flex flex-col gap-2">
+                    <div class="flex flex-col gap-2 mt-auto">
                         <button id="btn-sync" onclick="startLiveSync()" class="bg-gov-700 hover:bg-gov-800 text-white px-5 py-2.5 rounded-lg font-medium shadow-sm hover:shadow transition-all flex items-center gap-2 w-full justify-center group-hover:bg-gov-800">
                             <i class="fa-solid fa-play"></i>
                             <span id="btn-text">Mulai Monitoring</span>
@@ -182,28 +194,52 @@
                 <i class="fa-solid fa-tower-broadcast absolute -right-4 -bottom-4 text-9xl text-gray-50 opacity-10 transform -rotate-12 group-hover:scale-110 transition-transform duration-700"></i>
             </div>
 
-            <!-- Option 2: Manual Upload -->
-            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:border-gov-200 transition-colors relative overflow-hidden group">
-                <div class="absolute top-0 left-0 w-1 h-full bg-green-600"></div>
-                <div class="relative z-10">
-                    <h2 class="text-lg font-bold text-gray-800 mb-2 flex items-center justify-between">
-                        <span class="flex items-center"><i class="fa-solid fa-file-excel text-green-600 mr-2"></i> Upload Arsip</span>
-                        <span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded border border-gray-200">
-                            <i class="fa-solid fa-lock mr-1"></i>Local Processing
-                        </span>
-                    </h2>
-                    <p class="text-sm text-gray-600 mb-4 leading-relaxed">
-                        Proses file Excel (.xlsx) secara lokal di browser ini. <br>
-                        <span class="text-xs text-gray-500">Data Anda tidak diunggah ke server manapun (Aman).</span>
-                    </p>
-                    <div class="relative">
-                        <input type="file" id="upload-excel" accept=".xlsx, .xls" class="hidden" onchange="handleFileUpload(event)">
-                        <label for="upload-excel" class="cursor-pointer border-2 border-dashed border-gray-300 hover:border-gov-600 hover:bg-blue-50/50 text-gray-600 px-4 py-2.5 rounded-lg font-medium transition-all flex items-center justify-center gap-2 w-full">
-                            <i class="fa-solid fa-cloud-arrow-up"></i>
-                            Pilih File Excel
-                        </label>
+            <!-- Option 2: Kolaborasi Instansi -->
+            <div class="bg-slate-900 rounded-xl shadow-sm relative overflow-hidden group flex flex-col justify-center items-center h-full min-h-[200px]">
+                <!-- Grid Background -->
+                <div class="absolute inset-0 grid-bg opacity-30"></div>
+                
+                <!-- Glowing Overlay -->
+                <div class="absolute inset-0 bg-blue-500/10 mix-blend-overlay"></div>
+
+                <div class="relative z-10 flex flex-col items-center w-full px-6">
+                    <!-- Logos Container -->
+                    <div class="flex items-center justify-center gap-6 mb-4 w-full">
+                        <!-- Logo Pemda (Kiri) -->
+                        <div class="relative w-16 h-16 bg-white rounded-full p-1 shadow-[0_0_15px_rgba(255,255,255,0.2)] z-10 group-hover:scale-105 transition-transform">
+                            <img src="logo lutim juara.png" alt="Logo Pemda Luwu Timur" class="w-full h-full object-contain">
+                        </div>
+                        
+                        <!-- Connection Animation -->
+                        <div class="flex flex-col items-center justify-center relative w-16">
+                            <!-- Garis Koneksi -->
+                            <div class="absolute top-1/2 -translate-y-1/2 w-full flex items-center justify-between -z-0">
+                                <div class="h-0.5 w-full bg-gradient-to-r from-blue-400 via-green-400 to-red-500 opacity-50"></div>
+                            </div>
+                            <!-- Partikel Berjalan -->
+                            <div class="absolute top-1/2 -translate-y-1/2 w-full h-full flex items-center">
+                                <div class="w-2 h-2 rounded-full bg-white shadow-[0_0_10px_#fff] animate-ping mx-auto"></div>
+                            </div>
+                            <!-- Icon Handshake -->
+                            <i class="fa-solid fa-handshake text-blue-100 text-lg mt-6 z-10 bg-slate-900 px-2 rounded-full"></i>
+                        </div>
+
+                        <!-- Logo Media (Kanan) -->
+                        <div class="relative w-16 h-16 bg-white rounded-full p-1 shadow-[0_0_15px_rgba(255,0,0,0.2)] z-10 group-hover:scale-105 transition-transform">
+                            <img src="icon_merekamindonesia.png" alt="Logo Merekam Indonesia" class="w-full h-full object-contain">
+                        </div>
                     </div>
+                    
+                    <!-- Status Text -->
+                    <h3 class="text-blue-100 font-bold tracking-widest uppercase text-sm mb-1 text-center" id="anim-title">SINERGI INFORMASI</h3>
+                    <p class="text-blue-400/80 text-[10px] font-mono tracking-wider text-center" id="anim-desc">Pemkab Luwu Timur & MerekamIndonesia</p>
                 </div>
+                
+                <!-- Corner Decorations -->
+                <div class="absolute top-2 left-2 border-t border-l border-blue-500/50 w-4 h-4"></div>
+                <div class="absolute top-2 right-2 border-t border-r border-blue-500/50 w-4 h-4"></div>
+                <div class="absolute bottom-2 left-2 border-b border-l border-blue-500/50 w-4 h-4"></div>
+                <div class="absolute bottom-2 right-2 border-b border-r border-blue-500/50 w-4 h-4"></div>
             </div>
 
         </div>
@@ -312,7 +348,7 @@
                 <i class="fa-solid fa-server text-4xl text-gray-300"></i>
             </div>
             <h3 class="text-lg font-bold text-gray-600">Sistem Siap Digunakan</h3>
-            <p class="text-sm mt-2 max-w-md mx-auto">Silakan pilih metode input data di atas (Live Monitoring atau Upload Excel) untuk memulai rekapitulasi.</p>
+            <p class="text-sm mt-2 max-w-md mx-auto">Klik tombol "Mulai Monitoring" untuk menghubungkan dan menarik data berita secara *real-time*.</p>
         </div>
 
     </main>
@@ -321,14 +357,15 @@
     <footer class="bg-white border-t border-gray-200 py-8 mt-8">
         <div class="max-w-7xl mx-auto px-4 text-center">
             <div class="flex justify-center items-center gap-2 mb-2 text-gov-800 font-bold">
-                 <!-- TYPO FIXED HERE TOO -->
                  <span>MEREKAMINDONESIA.COM</span>
             </div>
             <p class="text-sm text-gray-600">Sistem Informasi Monitoring Media & Rekapitulasi Berita</p>
-            <!-- COPYRIGHT CHANGED -->
-            <p class="text-xs text-gray-400 mt-4">&copy; 2025 MerekamIndonesia.com. All Rights Reserved.</p>
+            <p class="text-xs text-gray-400 mt-4">&copy; 2026 MerekamIndonesia.com. All Rights Reserved.</p>
         </div>
     </footer>
+
+    <!-- Logo Hidden untuk keperluan cetak PDF -->
+    <img id="header-logo-pemda" crossOrigin="anonymous" src="logo lutim juara.png" style="display: none;">
 
     <!-- LOGIC -->
     <script>
@@ -362,13 +399,12 @@
             alert(
                 "=== INFO APLIKASI ===\n\n" +
                 "1. KEAMANAN DATA:\n" +
-                "   - Mode 'Upload Arsip': File Excel diproses 100% di dalam browser komputer Anda (Client-Side). Data TIDAK dikirim ke server manapun.\n" +
-                "   - Mode 'Live Monitoring': Hanya membaca data publik dari website MerekamIndonesia.com.\n\n" +
+                "   - Mode 'Live Monitoring': Hanya membaca data publik dari website MerekamIndonesia.com via API resmi yang aman.\n\n" +
                 "2. PENGGUNAAN:\n" +
                 "   - Pastikan terhubung internet agar tampilan (CDN) termuat sempurna.\n" +
                 "   - Gunakan browser modern (Chrome/Edge/Firefox) untuk performa terbaik.\n" +
-                "   - Jika monitoring Live gagal, pastikan aplikasi ini di-hosting di domain yang sama dengan website berita.\n\n" +
-                "Dibuat untuk keperluan Dinas Kominfo."
+                "   - Jika monitoring Live gagal, pastikan CORS Plugin di website utama sudah mengizinkan URL vercel aplikasi ini.\n\n" +
+                "Dibuat khusus untuk keperluan Dinas Kominfo."
             );
         }
 
@@ -395,6 +431,11 @@
             document.getElementById('btn-text').innerText = "Monitoring Aktif";
             document.getElementById('live-indicator').classList.remove('hidden');
             document.getElementById('sync-status-container').classList.remove('hidden');
+            
+            // Update Animasi Panel
+            document.getElementById('anim-title').innerText = "SINKRONISASI AKTIF";
+            document.getElementById('anim-title').classList.replace("text-blue-100", "text-green-400");
+            document.getElementById('anim-desc').innerText = "Menarik data berita terbaru...";
 
             // Initial Fetch
             fetchFromWebsite();
@@ -422,6 +463,11 @@
             document.getElementById('live-indicator').classList.add('hidden');
             document.getElementById('sync-status-container').classList.add('hidden');
             document.getElementById('sync-msg').innerText = "Menghubungkan...";
+            
+            // Reset Animasi Panel
+            document.getElementById('anim-title').innerText = "SINERGI INFORMASI";
+            document.getElementById('anim-title').classList.replace("text-green-400", "text-blue-100");
+            document.getElementById('anim-desc').innerText = "Pemkab Luwu Timur & MerekamIndonesia";
         }
 
         function startCountdown() {
@@ -491,13 +537,13 @@
                 // Only process if we got data
                 if (allFetchedPosts.length > 0) {
                     processAPIData(allFetchedPosts);
-                    document.getElementById('data-source-badge').innerText = 'Live Website';
+                    document.getElementById('data-source-badge').innerText = 'Live API';
                     
                     // Reset countdown visual upon success
                     startCountdown(); 
                 } else if (allData.length === 0) {
                     // Only alert if we have NO data at all (first run)
-                    alert('Tidak ada berita ditemukan dari Website, atau koneksi terblokir.');
+                    alert('Tidak ada berita ditemukan dari Website, atau koneksi terblokir oleh CORS. Pastikan plugin CORS telah di-set dengan benar di WordPress Anda.');
                     stopLiveSync();
                 }
 
@@ -549,81 +595,6 @@
             finishDataProcessing();
         }
 
-        // --- EXCEL PROCESSING (BACKUP) ---
-        function handleFileUpload(e) {
-            stopLiveSync(); // Stop auto sync if manual upload starts
-            
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            
-            reader.onload = function(e) {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, {type: 'array'});
-                const firstSheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[firstSheetName];
-                const jsonData = XLSX.utils.sheet_to_json(worksheet);
-                
-                processExcelData(jsonData);
-                document.getElementById('data-source-badge').innerText = 'Arsip Lokal';
-            };
-            
-            reader.readAsArrayBuffer(file);
-        }
-
-        function processExcelData(rawData) {
-            allData = []; 
-
-            rawData.forEach((row, index) => {
-                // Ambil data dengan fallback case-insensitive
-                const title = row['Title'] || row['title'] || 'Tanpa Judul';
-                const permalink = row['Permalink'] || row['permalink'] || '#';
-                
-                // Logika sumber
-                let source = row['Source'] || row['source'] || row['Sumber'] || row['sumber'];
-                if (!source) {
-                    try {
-                        const urlObj = new URL(permalink);
-                        if (urlObj.hostname.includes('kominfo')) source = 'Kominfo';
-                        else source = 'Merekam Indonesia';
-                    } catch (e) { source = 'Merekam Indonesia'; }
-                }
-
-                // Logika Tanggal
-                let dateRaw = row['Date'] || row['date'];
-                let dateObj = null;
-
-                if (dateRaw) {
-                    if (typeof dateRaw === 'number') {
-                        dateObj = new Date(Math.round((dateRaw - 25569)*86400*1000));
-                    } else if (typeof dateRaw === 'string') {
-                        let parts = dateRaw.split('-');
-                        if(parts.length === 3) {
-                            let year = parseInt(parts[0]);
-                            if (year < 100) year += 2000; 
-                            dateObj = new Date(year, parseInt(parts[1])-1, parseInt(parts[2]));
-                        } else {
-                             dateObj = new Date(dateRaw);
-                        }
-                    }
-                }
-                if (!dateObj || isNaN(dateObj.getTime())) dateObj = new Date(); 
-
-                allData.push({
-                    title: title,
-                    source: source,
-                    link: permalink,
-                    date: dateObj,
-                    monthIndex: dateObj.getMonth(),
-                    year: dateObj.getFullYear()
-                });
-            });
-
-            sortData();
-            finishDataProcessing();
-        }
-
         // --- HELPER: SORTING ---
         function sortData() {
             allData.sort((a, b) => {
@@ -636,11 +607,6 @@
 
                 // Rule 2: Date Descending (Newest First)
                 return b.date - a.date;
-            });
-
-            // Re-assign IDs based on new sort order
-            allData.forEach((item, index) => {
-                item.id = index + 1;
             });
         }
 
@@ -709,7 +675,7 @@
                 document.getElementById('empty-state').classList.add('hidden');
             }
 
-            // TAMBAHKAN index pada parameter forEach
+            // MENGGUNAKAN index untuk penomoran agar selalu berurutan
             filteredData.forEach((item, index) => {
                 const tr = document.createElement('tr');
                 const isKominfo = item.source.toLowerCase().includes('kominfo');
@@ -723,7 +689,6 @@
                 const dateStr = item.date.toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'});
 
                 // GUNAKAN escapeHtml() UNTUK KEAMANAN XSS
-                // UBAH ${item.id} menjadi ${index + 1}
                 tr.innerHTML = `
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium text-center border-r border-gray-100">${index + 1}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-mono text-xs">${dateStr}</td>
@@ -771,6 +736,8 @@
             
             // 1. Ambil Logo dari HTML dan Convert ke Base64 agar bisa dibaca jsPDF
             let base64Logo = null;
+            let base64LogoPemda = null;
+            
             const imgElement = document.getElementById('header-logo');
             if (imgElement) {
                 try {
@@ -785,10 +752,29 @@
                 }
             }
 
+            // Load Logo Pemda Luwu Timur
+            const imgPemda = document.getElementById('header-logo-pemda');
+            if (imgPemda) {
+                try {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = imgPemda.naturalWidth || imgPemda.width;
+                    canvas.height = imgPemda.naturalHeight || imgPemda.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(imgPemda, 0, 0);
+                    base64LogoPemda = canvas.toDataURL('image/png');
+                } catch (e) {
+                    console.warn("Gagal memuat logo Pemda untuk PDF:", e);
+                }
+            }
+
             // 2. DESAIN KOP SURAT (Mewah & Elegan)
             if (base64Logo) {
-                // Memasukkan Logo di kiri (X: 14, Y: 12, Lebar: 24, Tinggi: 24)
+                // Memasukkan Logo Merekam Indonesia di kiri
                 doc.addImage(base64Logo, 'PNG', 14, 12, 24, 24);
+            }
+            if (base64LogoPemda) {
+                // Memasukkan Logo Pemda di kanan atas
+                doc.addImage(base64LogoPemda, 'PNG', 172, 12, 24, 24);
             }
 
             // Nama Perusahaan / Instansi (Besar dan Tebal)
@@ -836,10 +822,9 @@
             const tableColumn = ["No", "Tanggal", "Sumber", "Judul Berita", "Link"];
             const tableRows = [];
 
-            // TAMBAHKAN index pada parameter forEach
+            // MENGGUNAKAN index untuk penomoran agar selalu berurutan mulai dari 1
             filteredData.forEach((item, index) => {
                 const dateStr = item.date.toLocaleDateString('id-ID', {day: '2-digit', month: '2-digit', year: 'numeric'});
-                // UBAH item.id menjadi index + 1
                 const rowData = [index + 1, dateStr, item.source, item.title, item.link];
                 tableRows.push(rowData);
             });
